@@ -32,6 +32,7 @@
 #include <fstream>
 #include <sstream>
 #include <cmath>
+#include <algorithm>
 
 struct Data {
     std::string schoolCode; // 學校代碼
@@ -77,10 +78,13 @@ class MaxHeap {
     }
 
     std::pair<int, int> getLeftBottom() {
-      if (!heap.empty()) {
-        return heap[heap.size() / 2];
+      if (heap.empty())
+        return std::make_pair(-1, -1);
+      int pos = 0;
+      while (2 * pos + 1 < heap.size()) {
+        pos = 2 * pos + 1;
       }
-      return std::make_pair(-1, -1);
+      return heap[pos];
     }
 };
 
@@ -166,10 +170,13 @@ class DEAP {
     }
 
     std::pair<int, int> getLeftBottom() {
-      if (!deap.empty()) {
-        return deap[deap.size() / 2];
+      if (deap.empty())
+        return std::make_pair(-1, -1);
+      int pos = 0;
+      while (2 * pos + 1 < deap.size()) {
+        pos = 2 * pos + 1;
       }
-      return std::make_pair(-1, -1);
+      return deap[pos];
     }
 };
 
@@ -196,7 +203,12 @@ class IO {
         std::getline(linestream, data.departmentName, '\t');
         std::getline(linestream, data.dayOrNight, '\t');
         std::getline(linestream, data.level, '\t');
-        linestream >> data.students >> data.teachers >> data.graduates;
+        std::string studentStr;
+        std::getline(linestream, studentStr, '\t');
+        studentStr.erase(std::remove(studentStr.begin(), studentStr.end(), ','), studentStr.end());
+        studentStr.erase(std::remove(studentStr.begin(), studentStr.end(), '"'), studentStr.end());
+        data.students = std::stoi(studentStr); // "1,032" or 1032 -> 1032
+        linestream >> data.teachers >> data.graduates;
         linestream.ignore(); // 跳過graduates後的tab
         std::getline(linestream, data.city, '\t');
         std::getline(linestream, data.system);
