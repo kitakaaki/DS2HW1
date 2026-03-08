@@ -25,6 +25,26 @@ class MaxHeap {
   private:
     std::vector<std::pair<int, int>> heap; // (序號, 上學年度畢業生數)
 
+    void ReheapDown(int pos) {
+      int size = heap.size();
+      while (true) {
+        int left = 2 * pos + 1;
+        int right = 2 * pos + 2;
+        int largest = pos;
+        if (left < size && heap[left].second > heap[largest].second) {
+          largest = left;
+        }
+        if (right < size && heap[right].second > heap[largest].second) {
+          largest = right;
+        }
+        if (largest != pos) {
+          std::swap(heap[pos], heap[largest]);
+          pos = largest;
+        } else {
+          break;
+        }
+      }
+    }
   public:
     void insert(int index, int graduates) {
       heap.push_back(std::make_pair(index, graduates));
@@ -33,6 +53,14 @@ class MaxHeap {
         std::swap(heap[pos], heap[(pos - 1) / 2]);
         pos = (pos - 1) / 2;
       }
+    }
+
+    void deleteMax() {
+        if (heap.empty())
+          return;
+        heap[0] = heap.back();
+        heap.pop_back();
+        ReheapDown(0);
     }
 
     std::pair<int, int> getMax() {
@@ -58,6 +86,10 @@ class MaxHeap {
       }
       return heap[pos];
     }
+
+    std::vector<std::pair<int, int>> getHeap() {
+      return heap;
+    }
 };
 
 class DEAP {
@@ -82,6 +114,46 @@ class DEAP {
         std::swap(deap[pos], deap[(pos - 1) / 2]);
         pos = (pos - 1) / 2;
       }
+    }
+
+    int ReheapDownMin(int pos) {
+      int size = deap.size();
+      while (true) {
+        int left = 2 * pos + 1;
+        int right = 2 * pos + 2;
+        int smallest = pos;
+        if (left < size && deap[left].second < deap[smallest].second)
+          smallest = left;
+        if (right < size && deap[right].second < deap[smallest].second)
+          smallest = right;
+        if (smallest != pos) {
+          std::swap(deap[pos], deap[smallest]);
+          pos = smallest;
+        } else {
+          break;
+        }
+      }
+      return pos;
+    }
+
+    int ReheapDownMax(int pos) {
+      int size = deap.size();
+      while (true) {
+        int left = 2 * pos + 1;
+        int right = 2 * pos + 2;
+        int largest = pos;
+        if (left < size && deap[left].second > deap[largest].second)
+          largest = left;
+        if (right < size && deap[right].second > deap[largest].second)
+          largest = right;
+        if (largest != pos) {
+          std::swap(deap[pos], deap[largest]);
+          pos = largest;
+        } else {
+          break;
+        }
+      }
+      return pos;
     }
 
     int findCorrespondingNode(int pos) {
@@ -129,28 +201,73 @@ class DEAP {
       }
     }
 
-     std::pair<int, int> getMax() {
-      if (!deap.empty()) {
+    void deleteMin() {
+      if (deap.size() <= 1)
+          return;
+      deap[1] = deap.back();
+      deap.pop_back();
+      int finalPos = ReheapDownMin(1);
+      // check corresponding node
+      if (deap.size() > 1) {
+        int corPos = findCorrespondingNode(finalPos);
+        if (corPos > 0 && corPos < (int)deap.size() && deap[finalPos].second > deap[corPos].second) {
+          std::swap(deap[finalPos], deap[corPos]);
+          ReheapUpMax(corPos);
+        }
+      }
+    }
+
+    void deleteMax() {
+      if (deap.size() <= 2)
+        return;
+      deap[2] = deap.back();
+      deap.pop_back();
+      int finalPos = ReheapDownMax(2);
+      // check corresponding node
+      if (deap.size() > 2) {
+        int corPos = findCorrespondingNode(finalPos);
+        if (corPos > 0 && corPos < (int)deap.size() && deap[finalPos].second < deap[corPos].second) {
+          std::swap(deap[finalPos], deap[corPos]);
+          ReheapUpMin(corPos);
+        }
+      }
+    }
+
+    std::pair<int, int> getMax() {
+      if (deap.size() > 2) {
         return deap[2];
+      } else if (deap.size() > 1) {
+        return deap[1];
+      }
+      return std::make_pair(-1, -1);
+    }
+
+    std::pair<int, int> getMin() {
+      if (deap.size() > 1) {
+        return deap[1];
       }
       return std::make_pair(-1, -1);
     }
 
     std::pair<int, int> getBottom() {
-      if (!deap.empty()) {
+      if (deap.size() > 1) {
         return deap[deap.size() - 1];
       }
       return std::make_pair(-1, -1);
     }
 
     std::pair<int, int> getLeftBottom() {
-      if (deap.empty())
+      if (deap.size() <= 1)
         return std::make_pair(-1, -1);
       int pos = 0;
       while (2 * pos + 1 < deap.size()) {
         pos = 2 * pos + 1;
       }
       return deap[pos];
+    }
+
+    std::vector<std::pair<int, int>> getHeap() {
+      return deap;
     }
 };
 
@@ -261,6 +378,9 @@ class system {
       std::cout << std::endl;
     }
 
+    static void mission3() {}
+
+    static void mission4() {}
   public:
     static void run() {
       while (true) {
@@ -269,6 +389,8 @@ class system {
         std::cout << "* 0. QUIT                        *" << std::endl;
         std::cout << "* 1. Build a max heap            *" << std::endl;
         std::cout << "* 2. Build a DEAP                *" << std::endl;
+        // std::cout << "* 3.                             *" << std::endl;
+        // std::cout << "* 4.                             *" << std::endl;
         std::cout << "***************************** ****" << std::endl;
         std::cout << "Input a choice(0, 1, 2): ";
         std::string choice;
@@ -279,6 +401,10 @@ class system {
           mission1();
         } else if (choice == "2") {
           mission2();
+     /* } else if (choice == "3") {
+          mission3();
+        } else if (choice == "4") {
+          mission4();*/
         } else {
           std::cout << std::endl << "Command does not exist!" << std::endl << std::endl;
         }
