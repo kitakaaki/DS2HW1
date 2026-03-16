@@ -4,21 +4,14 @@
 #include <fstream>
 #include <sstream>
 #include <cmath>
-#include <algorithm>
 #include <iomanip>
 
 struct Data {
-    std::string schoolCode; // 學校代碼
     std::string schoolName; // 學校名稱
-    std::string departmentCode; // 科系代碼
     std::string departmentName; // 科系名稱
     std::string dayOrNight; // 日間∕進修別
     std::string level; // 等級別
-    int students; // 學生數
-    int teachers; // 教師數
     int graduates; // 上學年度畢業生數
-    std::string city; // 縣市名稱
-    std::string system; // 體系別
     int index; // 序號(後產生)
 };
 
@@ -56,14 +49,6 @@ class MaxHeap {
       }
     }
 
-    void deleteMax() {
-        if (heap.empty())
-          return;
-        heap[0] = heap.back();
-        heap.pop_back();
-        ReheapDown(0);
-    }
-
     std::pair<int, int> getMax() {
       if (!heap.empty()) {
         return heap[0];
@@ -88,9 +73,6 @@ class MaxHeap {
       return heap[pos];
     }
 
-    std::vector<std::pair<int, int>> getHeap() {
-      return heap;
-    }
 };
 
 class DEAP {
@@ -115,46 +97,6 @@ class DEAP {
         std::swap(deap[pos], deap[(pos - 1) / 2]);
         pos = (pos - 1) / 2;
       }
-    }
-
-    int ReheapDownMin(int pos) {
-      int size = deap.size();
-      while (true) {
-        int left = 2 * pos + 1;
-        int right = 2 * pos + 2;
-        int smallest = pos;
-        if (left < size && deap[left].second < deap[smallest].second)
-          smallest = left;
-        if (right < size && deap[right].second < deap[smallest].second)
-          smallest = right;
-        if (smallest != pos) {
-          std::swap(deap[pos], deap[smallest]);
-          pos = smallest;
-        } else {
-          break;
-        }
-      }
-      return pos;
-    }
-
-    int ReheapDownMax(int pos) {
-      int size = deap.size();
-      while (true) {
-        int left = 2 * pos + 1;
-        int right = 2 * pos + 2;
-        int largest = pos;
-        if (left < size && deap[left].second > deap[largest].second)
-          largest = left;
-        if (right < size && deap[right].second > deap[largest].second)
-          largest = right;
-        if (largest != pos) {
-          std::swap(deap[pos], deap[largest]);
-          pos = largest;
-        } else {
-          break;
-        }
-      }
-      return pos;
     }
 
     int findCorrespondingNode(int pos) {
@@ -202,54 +144,6 @@ class DEAP {
       }
     }
 
-    void deleteMin() {
-      if (deap.size() <= 1)
-          return;
-      deap[1] = deap.back();
-      deap.pop_back();
-      int finalPos = ReheapDownMin(1);
-      // check corresponding node
-      if (deap.size() > 1) {
-        int corPos = findCorrespondingNode(finalPos);
-        if (corPos > 0 && corPos < (int)deap.size() && deap[finalPos].second > deap[corPos].second) {
-          std::swap(deap[finalPos], deap[corPos]);
-          ReheapUpMax(corPos);
-        }
-      }
-    }
-
-    void deleteMax() {
-      if (deap.size() <= 2)
-        return;
-      deap[2] = deap.back();
-      deap.pop_back();
-      int finalPos = ReheapDownMax(2);
-      // check corresponding node
-      if (deap.size() > 2) {
-        int corPos = findCorrespondingNode(finalPos);
-        if (corPos > 0 && corPos < (int)deap.size() && deap[finalPos].second < deap[corPos].second) {
-          std::swap(deap[finalPos], deap[corPos]);
-          ReheapUpMin(corPos);
-        }
-      }
-    }
-
-    std::pair<int, int> getMax() {
-      if (deap.size() > 2) {
-        return deap[2];
-      } else if (deap.size() > 1) {
-        return deap[1];
-      }
-      return std::make_pair(-1, -1);
-    }
-
-    std::pair<int, int> getMin() {
-      if (deap.size() > 1) {
-        return deap[1];
-      }
-      return std::make_pair(-1, -1);
-    }
-
     std::pair<int, int> getBottom() {
       if (deap.size() > 1) {
         return deap[deap.size() - 1];
@@ -267,14 +161,26 @@ class DEAP {
       return deap[pos];
     }
 
-    std::vector<std::pair<int, int>> getHeap() {
-      return deap;
-    }
 };
 
 class MinMaxHeap {
   private:
     std::vector<std::pair<int, int>> minMaxHeap; // (序號, 上學年度畢業生數)
+
+    int level(int pos) {
+      return std::floor(std::log2(pos + 1));
+    }
+
+    bool largerForMax(int cand, int best) {
+      if (minMaxHeap[cand].second != minMaxHeap[best].second) {
+        return minMaxHeap[cand].second > minMaxHeap[best].second;
+      }
+      // Assignment rule: if equal on the same level, pick the left node first.
+      if (level(cand) == level(best)) {
+        return cand < best;
+      }
+      return false;
+    }
 
     int parent(int pos) {
       return (pos - 1) / 2;
@@ -334,7 +240,7 @@ class MinMaxHeap {
         int index = candidates[i];
         if (index >= size)
           continue;
-        if (largest == -1 || minMaxHeap[index].second > minMaxHeap[largest].second)
+        if (largest == -1 || largerForMax(index, largest))
           largest = index;
       }
       return largest;
@@ -427,7 +333,7 @@ class MinMaxHeap {
         return;
       }
       int finalPos = 1;
-      if (minMaxHeap.size() > 2 && minMaxHeap[2].second > minMaxHeap[1].second)
+      if (minMaxHeap.size() > 2 && largerForMax(2, 1))
         finalPos = 2;
 
       minMaxHeap[finalPos] = minMaxHeap.back();
@@ -474,7 +380,7 @@ class MinMaxHeap {
 
     std::pair<int, int> getMax() {
       if (minMaxHeap.size() > 2) {
-        return minMaxHeap[2].second > minMaxHeap[1].second ? minMaxHeap[2] : minMaxHeap[1];
+        return largerForMax(2, 1) ? minMaxHeap[2] : minMaxHeap[1];
       } else if (minMaxHeap.size() > 1) {
         return minMaxHeap[1];
       } else if (!minMaxHeap.empty()) {
@@ -501,21 +407,19 @@ class IO {
       while (std::getline(file, line)) {
         Data data;
         std::istringstream linestream(line);
-        std::getline(linestream, data.schoolCode, '\t');
+        std::string unused;
+        std::getline(linestream, unused, '\t'); // schoolCode
         std::getline(linestream, data.schoolName, '\t');
-        std::getline(linestream, data.departmentCode, '\t');
+        std::getline(linestream, unused, '\t'); // departmentCode
         std::getline(linestream, data.departmentName, '\t');
         std::getline(linestream, data.dayOrNight, '\t');
         std::getline(linestream, data.level, '\t');
-        std::string studentStr;
-        std::getline(linestream, studentStr, '\t');
-        studentStr.erase(std::remove(studentStr.begin(), studentStr.end(), ','), studentStr.end());
-        studentStr.erase(std::remove(studentStr.begin(), studentStr.end(), '"'), studentStr.end());
-        data.students = std::stoi(studentStr); // "1,032" or 1032 -> 1032
-        linestream >> data.teachers >> data.graduates;
-        linestream.ignore(); // 跳過graduates後的tab
-        std::getline(linestream, data.city, '\t');
-        std::getline(linestream, data.system);
+        std::getline(linestream, unused, '\t'); // students
+        int unusedTeachers;
+        linestream >> unusedTeachers >> data.graduates;
+        linestream.ignore(); // skip tab after graduates
+        std::getline(linestream, unused, '\t'); // city
+        std::getline(linestream, unused); // system
         data.index = index++;
         dataList.push_back(data);
       }
@@ -540,7 +444,7 @@ class system {
   private:
     static void mission1() {
       std::string filenumber;
-      std::vector<Data> dataList = IO::readData(filenumber);
+      std::vector<Data> dataList;
       while (true) {
         std::cout << std::endl << "Input a file number ([0] Quit): ";
         std::cin >> filenumber;
@@ -570,7 +474,7 @@ class system {
 
     static void mission2() {
       std::string filenumber;
-      std::vector<Data> dataList = IO::readData(filenumber);
+      std::vector<Data> dataList;
       while (true) {
         std::cout << std::endl << "Input a file number ([0] Quit): ";
         std::cin >> filenumber;
@@ -598,7 +502,6 @@ class system {
 
     static void mission3(MinMaxHeap& minMaxHeap, std::vector<Data>& minMaxHeapDataList) {
       std::string filenumber;
-      std::vector<Data> dataList = IO::readData(filenumber);
       while (true) {
         std::cout << std::endl << "Input a file number ([0] Quit): ";
         std::cin >> filenumber;
@@ -645,6 +548,9 @@ class system {
               IO::printData(minMaxHeapDataList[maxNode.first - 1], i);
             }
             minMaxHeap.deleteMax();
+          }
+          if (minMaxHeap.empty()) {
+            minMaxHeapDataList.clear();
           }
         } catch (const std::exception& e) {
           std::cout << "\n### The value of K is out of range! ###\n";
