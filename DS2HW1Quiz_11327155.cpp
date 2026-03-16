@@ -5,6 +5,7 @@
 #include <sstream>
 #include <cmath>
 #include <algorithm>
+#include <iomanip>
 
 struct Data {
     std::string schoolCode; // 學校代碼
@@ -530,7 +531,7 @@ class IO {
     }
 
     static void printData(const Data& data, int order) {
-      std::cout << "Top   " << order << ": [" << data.index << "] " << data.schoolName << data.departmentName << ", " 
+      std::cout << "Top" << std::setw(4) << std::right << order << ": [" << data.index << "] " << data.schoolName << data.departmentName << ", " 
                 << data.dayOrNight << ", " << data.level << ", " << data.graduates << std::endl;
     }
 };
@@ -627,7 +628,7 @@ class system {
 
     static void mission4(MinMaxHeap& minMaxHeap, std::vector<Data>& minMaxHeapDataList) {
         if (minMaxHeapDataList.empty() || minMaxHeap.empty()) {
-          std::cout << std::endl << "### Please execute mission 3 first! ###" << std::endl << std::endl;
+          std::cout << std::endl << "### Execute command 3 first! ###" << std::endl << std::endl;
           return;
         }
         std::string K;
@@ -662,7 +663,7 @@ class system {
         std::cout << "* 2. Build a DEAP                *" << std::endl;
         std::cout << "* 3. Build a min-max heap        *" << std::endl;
         std::cout << "* 4: Top-K max from min-max heap *" << std::endl;
-        std::cout << "***************************** ****" << std::endl;
+        std::cout << "**********************************" << std::endl;
         std::cout << "Input a choice(0, 1, 2, 3, 4): ";
         std::string choice;
         std::cin >> choice;
