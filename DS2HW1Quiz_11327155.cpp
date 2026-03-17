@@ -184,7 +184,7 @@ class MinMaxHeap {
 
     int findLargestDescendant(int pos) {
       int size = minMaxHeap.size();
-      int candidates[6] = {2 * pos + 1, 2 * pos + 2, 4 * pos + 3, 4 * pos + 4, 4 * pos + 5, 4 * pos + 6};
+      int candidates[6] = {4 * pos + 3, 4 * pos + 4, 4 * pos + 5, 4 * pos + 6, 2 * pos + 1, 2 * pos + 2};
       int largest = -1;
       for (int i = 0; i < 6; ++i) {
         int index = candidates[i];
