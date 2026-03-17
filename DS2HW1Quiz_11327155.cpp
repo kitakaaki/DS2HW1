@@ -19,26 +19,6 @@ class MaxHeap {
   private:
     std::vector<std::pair<int, int>> heap; // (序號, 上學年度畢業生數)
 
-    void ReheapDown(int pos) {
-      int size = heap.size();
-      while (true) {
-        int left = 2 * pos + 1;
-        int right = 2 * pos + 2;
-        int largest = pos;
-        if (left < size && heap[left].second > heap[largest].second) {
-          largest = left;
-        }
-        if (right < size && heap[right].second > heap[largest].second) {
-          largest = right;
-        }
-        if (largest != pos) {
-          std::swap(heap[pos], heap[largest]);
-          pos = largest;
-        } else {
-          break;
-        }
-      }
-    }
   public:
     void insert(int index, int graduates) {
       heap.push_back(std::make_pair(index, graduates));
@@ -160,27 +140,11 @@ class DEAP {
       }
       return deap[pos];
     }
-
 };
 
 class MinMaxHeap {
   private:
     std::vector<std::pair<int, int>> minMaxHeap; // (序號, 上學年度畢業生數)
-
-    int level(int pos) {
-      return std::floor(std::log2(pos + 1));
-    }
-
-    bool largerForMax(int cand, int best) {
-      if (minMaxHeap[cand].second != minMaxHeap[best].second) {
-        return minMaxHeap[cand].second > minMaxHeap[best].second;
-      }
-      // Assignment rule: if equal on the same level, pick the left node first.
-      if (level(cand) == level(best)) {
-        return cand < best;
-      }
-      return false;
-    }
 
     int parent(int pos) {
       return (pos - 1) / 2;
@@ -218,20 +182,6 @@ class MinMaxHeap {
       }
     }
 
-    int findSmallestDescendant(int pos) {
-      int size = minMaxHeap.size();
-      int candidates[6] = {2 * pos + 1, 2 * pos + 2, 4 * pos + 3, 4 * pos + 4, 4 * pos + 5, 4 * pos + 6};
-      int smallest = -1;
-      for (int i = 0; i < 6; ++i) {
-        int index = candidates[i];
-        if (index >= size)
-          continue;
-        if (smallest == -1 || minMaxHeap[index].second < minMaxHeap[smallest].second)
-          smallest = index;
-      }
-      return smallest;
-    }
-
     int findLargestDescendant(int pos) {
       int size = minMaxHeap.size();
       int candidates[6] = {2 * pos + 1, 2 * pos + 2, 4 * pos + 3, 4 * pos + 4, 4 * pos + 5, 4 * pos + 6};
@@ -240,35 +190,10 @@ class MinMaxHeap {
         int index = candidates[i];
         if (index >= size)
           continue;
-        if (largest == -1 || largerForMax(index, largest))
+        if (largest == -1 || minMaxHeap[index].second > minMaxHeap[largest].second)
           largest = index;
       }
       return largest;
-    }
-
-    void reheapDownMin(int pos) {
-      while (true) {
-        int smallest = findSmallestDescendant(pos);
-        if (smallest == -1)
-          break;
-        if (isGrandchild(pos, smallest)) {
-          if (minMaxHeap[smallest].second < minMaxHeap[pos].second) {
-            std::swap(minMaxHeap[smallest], minMaxHeap[pos]);
-            int p = parent(smallest);
-            if (minMaxHeap[smallest].second > minMaxHeap[p].second) {
-              std::swap(minMaxHeap[smallest], minMaxHeap[p]);
-            }
-            pos = smallest;
-          } else {
-            break;
-          }
-        } else {
-          if (minMaxHeap[smallest].second < minMaxHeap[pos].second) {
-            std::swap(minMaxHeap[smallest], minMaxHeap[pos]);
-          }
-          break;
-        }
-      }
     }
 
     void reheapDownMax(int pos) {
@@ -333,7 +258,7 @@ class MinMaxHeap {
         return;
       }
       int finalPos = 1;
-      if (minMaxHeap.size() > 2 && largerForMax(2, 1))
+      if (minMaxHeap.size() > 2 && minMaxHeap[2].second > minMaxHeap[1].second)
         finalPos = 2;
 
       minMaxHeap[finalPos] = minMaxHeap.back();
@@ -380,7 +305,7 @@ class MinMaxHeap {
 
     std::pair<int, int> getMax() {
       if (minMaxHeap.size() > 2) {
-        return largerForMax(2, 1) ? minMaxHeap[2] : minMaxHeap[1];
+        return minMaxHeap[2].second > minMaxHeap[1].second ? minMaxHeap[2] : minMaxHeap[1];
       } else if (minMaxHeap.size() > 1) {
         return minMaxHeap[1];
       } else if (!minMaxHeap.empty()) {
