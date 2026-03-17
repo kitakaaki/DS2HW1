@@ -182,40 +182,44 @@ class MinMaxHeap {
       }
     }
 
-    int findLargestDescendant(int pos) {
+    int findLargestChild(int pos) {
       int size = minMaxHeap.size();
-      int candidates[6] = {4 * pos + 3, 4 * pos + 4, 4 * pos + 5, 4 * pos + 6, 2 * pos + 1, 2 * pos + 2};
-      int largest = -1;
-      for (int i = 0; i < 6; ++i) {
-        int index = candidates[i];
-        if (index >= size)
-          continue;
-        if (largest == -1 || minMaxHeap[index].second > minMaxHeap[largest].second)
-          largest = index;
+      int left = 2 * pos + 1;
+      int right = 2 * pos + 2;
+      if (left >= size)
+        return -1;
+      if (right >= size)
+        return left;
+      return minMaxHeap[right].second > minMaxHeap[left].second ? right : left;
+    }
+
+    int findLargestGrandChild(int pos) {
+      int size = minMaxHeap.size();
+      int largestGrandChild = -1;
+      for (int i = 4 * pos + 3; i <= 4 * pos + 6; ++i) {
+        if (i < size) {
+          if (largestGrandChild == -1 || minMaxHeap[i].second > minMaxHeap[largestGrandChild].second) {
+            largestGrandChild = i;
+          }
+        }
       }
-      return largest;
+      return largestGrandChild;
     }
 
     void reheapDownMax(int pos) {
       while (true) {
-        int largest = findLargestDescendant(pos);
-        if (largest == -1)
-          break;
-        if (isGrandchild(pos, largest)) {
-          if (minMaxHeap[largest].second > minMaxHeap[pos].second) {
-            std::swap(minMaxHeap[largest], minMaxHeap[pos]);
-            int p = parent(largest);
-            if (minMaxHeap[largest].second < minMaxHeap[p].second) {
-              std::swap(minMaxHeap[largest], minMaxHeap[p]);
-            }
-            pos = largest;
-          } else {
-            break;
-          }
+        int largestChild = findLargestChild(pos);
+        if (largestChild == -1)
+          return;
+        // (1) compare pos and children)
+        if (minMaxHeap[largestChild].second > minMaxHeap[pos].second)
+          std::swap(minMaxHeap[largestChild], minMaxHeap[pos]);
+        // (2) reheapdown with max level
+        int largestGrandChild = findLargestGrandChild(pos);
+        if (largestGrandChild != -1 && minMaxHeap[largestGrandChild].second > minMaxHeap[pos].second) {
+          std::swap(minMaxHeap[largestGrandChild], minMaxHeap[pos]);
+          pos = largestGrandChild;
         } else {
-          if (minMaxHeap[largest].second > minMaxHeap[pos].second) {
-            std::swap(minMaxHeap[largest], minMaxHeap[pos]);
-          }
           break;
         }
       }
