@@ -364,7 +364,7 @@ class IO {
     }
 
     static void printData(const Data& data, int order) {
-      std::cout << "Top" << std::setw(4) << std::right << order << ": [" << data.index << "] " << data.schoolName << data.departmentName << ", " 
+      std::cout << "Top " << std::setw(3) << std::right << order << ": [" << data.index << "] " << data.schoolName << data.departmentName << ", " 
                 << data.dayOrNight << ", " << data.level << ", " << data.graduates << std::endl;
     }
 };
